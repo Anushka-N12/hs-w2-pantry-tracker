@@ -10,6 +10,9 @@ export default function Home() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState({ name: '', quan: '' });
   const [searchQuery, setSearchQuery] = useState("");
+  const [modal, setModal] = useState(false);
+  const [recipieModal, setRecipieModal] = useState(false);
+  const [recipies, setRecipies] = useState([]);
 
   // Add items
   const addItem = async (e) => {
@@ -39,10 +42,46 @@ export default function Home() {
   };
 
   // For upload pop-up
-  const [modal, setModal] = useState(false);
   const toggleModal = () => {
     setModal(!modal);
   };
+  const toggleRecipieModal = async () => {
+    if (!recipieModal) {
+      const fetchedRecipies = await fetchRecipies();
+      console.log('testing print in toggle');
+      console.log(fetchedRecipies);
+      setRecipies(fetchedRecipies);
+    }
+    setRecipieModal(!recipieModal);
+  };
+
+  const fetchRecipies = async () => {
+    const AvailableItems = items.map(item => item.name).join(', ');
+    console.log(AvailableItems);
+    console.log(items.length);
+    try {
+      const response = await fetch('/api/getRecipes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ AvailableItems }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      // Handle the recipes data
+      console.log(data.recipes);
+      return data.recipes;
+    } catch (error) {
+      console.error("Error fetching recipes:", error);
+    }
+  };
+
+
 
   // Filtered items based on search query
   const filteredItems = items.filter(item =>
@@ -60,10 +99,17 @@ export default function Home() {
             <button type="submit" className="text-slate-200 bg-slate-500 hover:bg-sky-700 p-2 text-md rounded-full h-10 w-10 mx-2">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
             </button>
-            <button onClick={toggleModal} type="button" className="-translate-x-8 text-slate-200 bg-slate-500 hover:bg-sky-700 p-2 text-md rounded-full h-10 w-10">
+          </form>
+          <div>
+            <button onClick={toggleModal} type="button" className=" text-slate-200 bg-slate-500 hover:bg-sky-700 p-2 px-4 pt-3 text-md rounded-full mx-2 mt-3 inline-flex gap-2">
+              <span>Add through image</span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>
             </button>
-          </form>
+            <button onClick={toggleRecipieModal} type="button" className=" text-slate-200 bg-slate-500 hover:bg-sky-700 p-2 px-4 pt-3 text-md rounded-full mx-2 mt-3 inline-flex gap-2">
+              <span>Generate Recipes</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>
+            </button>
+          </div>
           <div className="my-4 relative w-5/6 mx-2">
             <input
               type="text"
@@ -113,6 +159,17 @@ export default function Home() {
             <button className='mt-4 close-modal bg-slate-600 text-white px-4 py-2 rounded-md hover:text-slate-950' onClick={toggleModal}>CLOSE</button>
           </div>
         </div>
+
+        <div className={`modal ${recipieModal ? 'block' : 'hidden'} fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50`}>
+          <div className="modal-content bg-slate-800 p-6 rounded-md shadow-lg w-4/5 max-w-lg mx-auto">
+            <h3 className="text-xl mb-4">Response:</h3>
+            <div className="flex flex-col gap-4">
+              <p>{recipies}</p>
+            </div>
+            <button className='mt-4 close-modal bg-slate-600 text-white px-4 py-2 rounded-md hover:text-slate-950' onClick={toggleRecipieModal}>CLOSE</button>
+          </div>
+        </div>
+
       </div>
     </main>
   );
