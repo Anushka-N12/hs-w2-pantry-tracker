@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Inter } from "next/font/google";
 import { collection, addDoc, query, onSnapshot, deleteDoc, doc } from "firebase/firestore";
-import { db } from './firebase';
+import { db } from '../components/firebase';
 
 const inter = Inter({ subsets: ["latin"] });
 
